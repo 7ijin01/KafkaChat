@@ -19,4 +19,11 @@ public class CustomUserRepositoryImpl implements CustromUserRepository
         query.addCriteria(Criteria.where("username").is(username));
         return mongoTemplate.findOne(query,UserEntity.class);
     }
+
+    @Override
+    public UserEntity findByUserId(String userId) {
+        Query query= new Query();
+        query.addCriteria(Criteria.where("userId").is(userId));
+        return mongoTemplate.findOne(query,UserEntity.class);
+    }
 }
