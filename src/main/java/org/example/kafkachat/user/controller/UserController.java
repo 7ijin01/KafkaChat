@@ -21,7 +21,6 @@ public class UserController
     {
         userService.userRegister(registerRequest);
         return ResponseEntity.ok("success");
-
     }
 
 }
