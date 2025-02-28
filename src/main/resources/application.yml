@@ -1,0 +1,15 @@
+spring:
+  data:
+    mongodb:
+      uri:
+      database: kafka
+    kafka:
+      bootstrap-servers: kafka:9092
+      consumer:
+        group-id: chat-group
+        auto-offset-reset: earliest
+      producer:
+        key-serializer: org.apache.kafka.common.serialization.StringSerializer
+        value-serializer: org.apache.kafka.common.serialization.StringSerializer
+jwt:
+  secret: "jfsgkhdsjkweoiruwqejkrfbrsdfgdsfagbdf"
