@@ -26,6 +26,8 @@ public class KafkaProducerConfig
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.ACKS_CONFIG, "all");// 리플리카 백업
+        props.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG,"tx-");
+
         return props;
 
     }
