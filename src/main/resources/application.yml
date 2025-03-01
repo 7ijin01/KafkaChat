@@ -1,10 +1,10 @@
 spring:
   data:
     mongodb:
-      uri: mongodb+srv://gijin22:qIkwtBVNuVzPHOht@cluster0.uwirm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      uri:
       database: kafka
   kafka:
-    bootstrap-servers: kafka-1:9092
+    bootstrap-servers: localhost:9092
     consumer:
       group-id: chat-group
       auto-offset-reset: earliest
@@ -14,5 +14,8 @@ spring:
     producer:
       acks: all
       transaction-id-prefix: "tx-"  #트랜젝션 설정으로 메세지 손실 방지
-jwt:
-  secret: "jfsgkhdsjkweoiruwqejkrfbrsdfgdsfagbdf"
+    admin:
+      properties:
+        replication.factor: 1
+  jwt:
+    secret: "jfsgkhdsjkweoiruwqejkrfbrsdfgdsfagbdf"
