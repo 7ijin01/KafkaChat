@@ -16,13 +16,14 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: PLAINTEXT://kafka-1:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092,PLAINTEXT://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092  # ✅ 모든 IP에서 접속 가능하도록 수정
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092  # ✅ `localhost`만 광고
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
     depends_on:
       - zookeeper
 
-#이거는 카프카 상태 확인
+
+  #이거는 카프카 상태 확인
   kafka-ui:
     image: provectuslabs/kafka-ui
     container_name: kafka-ui
