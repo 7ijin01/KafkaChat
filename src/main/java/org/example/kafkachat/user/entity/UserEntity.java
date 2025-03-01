@@ -8,19 +8,19 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "user")
 @Data
 @NoArgsConstructor
-@Builder
+
 public class UserEntity {
     @Id
     private String id;
     private String userId;
     private String password;
-    private String userName;
+    private String username;
 
     @Builder
-    private UserEntity(String userId, String password, String userName, String userName1) {
+    private UserEntity(String userId, String password, String userName) {
         this.userId = userId;
         this.password = password;
-        this.userName = userName;
+        this.username = userName;
     }
 
 
