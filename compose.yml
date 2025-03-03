@@ -18,7 +18,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092  # ✅ 모든 IP에서 접속 가능하도록 수정
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092  # ✅ `localhost`만 광고
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper
 
