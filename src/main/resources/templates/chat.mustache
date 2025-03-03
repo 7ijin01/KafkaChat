@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+    <title>Real-Time Chat</title>
+    <style>
+        #messages {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 200px;
+            overflow-y: scroll;
+            margin-top: 10px;
+        }
+        #controls, #auth-section {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+<h2>Real-Time Chat</h2>
+
+<!-- ✅ JWT 인증 -->
+<div id="auth-section">
+    <h3>Enter Your Token</h3>
+    <input type="text" id="authToken" placeholder="Enter your JWT token">
+    <button id="confirmTokenButton">확인</button>
+    <p id="displayToken" style="word-break: break-all;"></p>
+</div>
+
+<!-- ✅ 채팅 메시지 입력 -->
+<div id="controls">
+    <h3>Chat</h3>
+    <input type="text" id="messageInput" placeholder="Enter your message">
+    <button id="sendButton" disabled>Send</button>
+</div>
+
+<!-- ✅ 채팅 메시지 표시 -->
+<div id="messages"></div>
+
+<script>
+    let stompClient = null;
+    let chatRoomId = "1234";  // ✅ 방 ID를 1234로 고정
+    let username = "User1";   // ✅ 임의의 사용자 이름 설정
+
+    document.addEventListener("DOMContentLoaded", function () {
+        console.log("✅ [DOMContentLoaded] 페이지 로드 완료");
+
+        document.getElementById("confirmTokenButton").addEventListener("click", function () {
+            const token = getAuthToken();
+            if (!token) {
+                alert("토큰을 입력해주세요!");
+                return;
+            }
+            console.log("🔹 [확인 버튼 클릭] 입력한 토큰:", token);
+            document.getElementById('displayToken').textContent = "🔑 입력한 토큰: " + token;
+            initializeWebSocket();
+        });
+
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+    });
+
+    function getAuthToken() {
+        return document.getElementById('authToken').value.trim();
+    }
+
+    function displayMessage(sender, message) {
+        const messagesDiv = document.getElementById('messages');
+        const messageElement = document.createElement('div');
+        messageElement.textContent = `${sender}: ${message}`;
+        messagesDiv.appendChild(messageElement);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function joinRoom() {
+        if (!stompClient || !stompClient.connected) {
+            alert("WebSocket이 아직 연결되지 않았습니다.");
+            return;
+        }
+
+        const token = getAuthToken();
+        if (!token) {
+            alert("토큰을 입력한 후 다시 시도해주세요!");
+            return;
+        }
+
+        document.getElementById('messages').innerHTML = ''; // ✅ 메시지 영역 초기화
+
+        // ✅ 방 구독 설정
+        stompClient.subscribe(
+                `/topic/chat/${chatRoomId}`,
+                function (message) {
+                    const msg = JSON.parse(message.body);
+                    displayMessage(msg.sender, msg.content);
+                },
+                { "Authorization": `Bearer ${token}` }  // ✅ Authorization 헤더 추가
+        );
+
+        console.log(`🔹 [채팅방 입장] 방 ID: ${chatRoomId}`);
+
+        // ✅ 서버에 유저 입장 메시지 전송
+        stompClient.send(
+                `/app/send/${chatRoomId}`,
+                { "Authorization": `Bearer ${token}` },
+                JSON.stringify({
+                    sender: username,
+                    content: `${username} 님이 입장하셨습니다.`,
+                    roomId: chatRoomId
+                })
+        );
+
+        alert(`채팅방 ${chatRoomId}에 입장하였습니다.`);
+        document.getElementById('sendButton').disabled = false;
+    }
+
+    function sendMessage() {
+        const messageInput = document.getElementById('messageInput');
+        const messageContent = messageInput.value.trim();
+
+        if (!messageContent || !chatRoomId) {
+            console.warn("❌ 메시지 내용이 없거나, 채팅방이 선택되지 않음.");
+            return;
+        }
+
+        if (!stompClient || !stompClient.connected) {
+            console.warn("❌ WebSocket이 연결되지 않음.");
+            alert("WebSocket이 아직 연결되지 않았습니다.");
+            return;
+        }
+
+        const token = getAuthToken();
+        if (!token) {
+            console.warn("❌ 토큰이 없음.");
+            alert("토큰을 입력한 후 다시 시도해주세요!");
+            return;
+        }
+
+        console.log(`🔹 메시지 전송: 방 ID ${chatRoomId}, 보낸 사람 ${username}, 내용 ${messageContent}`);
+
+        stompClient.send(
+                `/app/send/${chatRoomId}`,
+                { "Authorization": `Bearer ${token}` },
+                JSON.stringify({
+                    sender: username,
+                    content: messageContent,
+                    roomId: chatRoomId
+                })
+        );
+
+        messageInput.value = '';
+    }
+
+    function initializeWebSocket() {
+        console.log("🔹 [initializeWebSocket] WebSocket 연결을 시도합니다...");
+
+        const token = getAuthToken();
+        if (!token) {
+            alert("토큰을 입력해주세요!");
+            return;
+        }
+
+        const port = window.location.port || "8081"; // ✅ 현재 접속된 포트 확인, 기본값 8081
+        const socket = new SockJS(`http://${window.location.hostname}:8080/ws`);
+        stompClient = Stomp.over(socket);
+
+        // ✅ STOMP connect 시 Authorization 헤더 포함
+        stompClient.connect(
+                { "Authorization": `Bearer ${token}` },
+                function (frame) {
+                    console.log("✅ WebSocket 연결 성공:", frame);
+                    joinRoom();  // ✅ WebSocket 연결 후 채팅방 자동 입장
+                },
+                function (error) {
+                    console.error("❌ WebSocket 연결 실패:", error);
+                }
+        );
+    }
+</script>
+</body>
+</html>

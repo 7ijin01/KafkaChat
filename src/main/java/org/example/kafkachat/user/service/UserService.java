@@ -24,7 +24,9 @@ public class UserService
                     .userName(registerRequest.getUserName())
                     .password(bCryptPasswordEncoder.encode(registerRequest.getPassword()))
                     .build();
+            userRepository.save(userEntity);
         }
+
     }
 
 }

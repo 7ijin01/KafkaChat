@@ -20,6 +20,7 @@ public class ChatConsumer
         //카프카 브로커에서 메세지 받고 Stomp이용해서 client에게 메세지 뿌리기
         ObjectMapper mapper = new ObjectMapper();
         ChatMessage chatMessage = mapper.readValue(message,ChatMessage.class);
+        System.out.println("📥 [KafkaConsumer] 받은 메시지: \n\n\n\n\n" + chatMessage.getContent());
         simpMessagingTemplate.convertAndSend("/topic/chat/"+chatMessage.getRoomId(),chatMessage);
     }
 

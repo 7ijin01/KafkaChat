@@ -80,7 +80,7 @@ public class JWTFilter extends OncePerRequestFilter
 
         UserEntity userEntity = new UserEntity();
         userEntity.setUserId(userId);
-        userEntity.setUserName(username);
+        userEntity.setUsername(username);
         CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);
 
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
