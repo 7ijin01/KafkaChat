@@ -21,7 +21,7 @@ public class UserService
         {
             UserEntity userEntity =UserEntity.builder()
                     .userId(registerRequest.getUserId())
-                    .userName(registerRequest.getUserName())
+                    .userName(registerRequest.getUsername())
                     .password(bCryptPasswordEncoder.encode(registerRequest.getPassword()))
                     .build();
             userRepository.save(userEntity);
