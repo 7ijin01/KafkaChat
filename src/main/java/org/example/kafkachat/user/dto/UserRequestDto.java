@@ -14,6 +14,6 @@ public class UserRequestDto
     public static class RegisterRequest {
         private String userId;
         private String password;
-        private String userName;
+        private String username;
     }
 }
