@@ -133,10 +133,27 @@
             });
         }
     }
+    async function fetchChatHistory(roomId) {
+        const response = await fetchWithAuth(`/chat/room/${roomId}/history`);
+
+        if (!response.ok) {
+            console.error(`❌ [채팅 내역 불러오기 실패] 상태 코드: ${response.status}`);
+            return;
+        }
+
+        try {
+            const messages = await response.json();
+            console.log("✅ [채팅 내역 불러오기 성공]:", messages);
+            messages.forEach(msg => displayMessage(msg.sender, msg.content));
+        } catch (error) {
+            console.error('❌ [채팅 내역 파싱 오류]', error);
+        }
+    }
+
 
     async function joinRoom(roomId) {
         chatRoomId = roomId;
-        document.getElementById('messages').innerHTML = '';
+        document.getElementById('messages').innerHTML = ''; // ✅ 메시지 초기화
 
         if (!stompClient || !stompClient.connected) {
             alert("WebSocket이 아직 연결되지 않았습니다.");
@@ -149,6 +166,10 @@
             return;
         }
 
+        // ✅ 1. 채팅 내역 불러오기 추가
+        await fetchChatHistory(chatRoomId);
+
+        // ✅ 2. WebSocket 구독 설정
         stompClient.subscribe(
                 `/topic/chat/${chatRoomId}`,
                 function (message) {
@@ -158,6 +179,7 @@
                 { "Authorization": `Bearer ${token}` }
         );
 
+        // ✅ 3. WebSocket으로 입장 메시지 전송
         stompClient.send(
                 `/app/send/${chatRoomId}`,
                 { "Authorization": `Bearer ${token}` },
@@ -172,6 +194,7 @@
         alert(`채팅방 ${chatRoomId}에 입장하였습니다.`);
         document.getElementById('sendButton').disabled = false;
     }
+
 
     function displayMessage(sender, message) {
         const messagesDiv = document.getElementById('messages');
