@@ -24,7 +24,7 @@ public class KafkaConsumerConfig
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "chat-group");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "chat-group");//같은 그룹 내 소비자가 메세지 나눠받음
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return props;
 
