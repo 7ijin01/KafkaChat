@@ -6,6 +6,13 @@ services:
     restart: always
     ports:
       - "2181:2181"
+    networks:
+      - chat-network
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo ruok | nc -w 2 localhost 2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   kafka-1:
     image: wurstmeister/kafka:latest
@@ -16,14 +23,17 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092  # ✅ 모든 IP에서 접속 가능하도록 수정
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092  # ✅ `localhost`만 광고
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
+    networks:
+      - chat-network
 
-
-  #이거는 카프카 상태 확인
   kafka-ui:
     image: provectuslabs/kafka-ui
     container_name: kafka-ui
@@ -35,6 +45,9 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:9092
     depends_on:
       - kafka-1
+    networks:
+      - chat-network
+
   redis:
     image: redis:latest
     container_name: redis
@@ -48,45 +61,7 @@ services:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       retries: 10
-#  elasticsearch:
-#    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3
-#    container_name: elasticsearch
-#    environment:
-#      - discovery.type=single-node
-#      - "ES_JAVA_OPTS=-Xms256m -Xmx512m"  # Heap 메모리 제한
-#      - ELASTIC_USERNAME=elastic
-#      - ELASTIC_PASSWORD=changeme
-#      - xpack.security.enabled=false  # 보안 기능 비활성화
-#      - xpack.monitoring.templates.enabled=false  # 모니터링 비활성화
-#      - xpack.watcher.enabled=false  # Watcher 비활성화
-#    ports:
-#      - "9200:9200"
-#    networks:
-#      - elastic_net
-#    volumes:
-#      - elasticsearch_data:/usr/share/elasticsearch/data
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 1g  # 컨테이너 메모리 제한 설정
-#
-#  kibana:
-#    image: docker.elastic.co/kibana/kibana:8.5.3
-#    container_name: kibana
-#    environment:
-#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-#      - ELASTICSEARCH_USERNAME=elastic
-#      - ELASTICSEARCH_PASSWORD=changeme
-#    ports:
-#      - "5601:5601"
-#    networks:
-#      - elastic_net
-#    depends_on:
-#      - elasticsearch
-#
+
 networks:
   chat-network:
     driver: bridge
-#volumes:
-#  elasticsearch_data:
-#    driver: local
