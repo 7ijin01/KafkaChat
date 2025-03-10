@@ -42,10 +42,10 @@ jobs:
         run: docker build -t KafkaChat .
 
       - name: Docker 이미지에 Tag 추가
-        run: docker tag KafkaChat ${{ steps.login-ecr.outputs.registry }}/KafkaChat:latest
+        run: docker tag KafkaChat ${{ steps.login-ecr.outputs.registry }}/2025-03-10:latest
 
       - name: ECR에 Docker 이미지 Push
-        run: docker push ${{ steps.login-ecr.outputs.registry }}/KafkaChat:latest
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/2025-03-10:latest
 
       - name: Docker Compose 파일 EC2로 전송
         uses: appleboy/scp-action@master
@@ -64,11 +64,11 @@ jobs:
           script_stop: true
           script: |
             # ✅ 기존 컨테이너 중지 및 삭제
-            docker stop KafkaChat || true
-            docker rm KafkaChat || true
+            docker stop 2025-03-10 || true
+            docker rm 2025-03-10 || true
               
             # ✅ 최신 이미지 가져오기
-            docker pull ${{ steps.login-ecr.outputs.registry }}/KafkaChat:latest
+            docker pull ${{ steps.login-ecr.outputs.registry }}/2025-03-10:latest
               
             # ✅ 기존 Kafka, Redis 컨테이너 중지 및 삭제
             docker compose -f /home/ubuntu/compose.yml down || true
@@ -77,6 +77,6 @@ jobs:
             docker compose -f /home/ubuntu/compose.yml up -d
               
             # ✅ 애플리케이션 컨테이너 실행
-            docker run -d --name KafkaChat -p 8080:8080 --network chat-network ${{ steps.login-ecr.outputs.registry }}/KafkaChat:latest
+            docker run -d --name KafkaChat -p 8080:8080 --network chat-network ${{ steps.login-ecr.outputs.registry }}/2025-03-10:latest
 
 
