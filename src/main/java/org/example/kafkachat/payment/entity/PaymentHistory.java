@@ -24,8 +24,6 @@ public class PaymentHistory {
     @Field("member_id")
     private String memberId; // 결제한 사용자 ID
 
-    @Field("order_id")
-    private String orderId; // 결제된 주문 ID
 
     @Field("merchant_uid")
     private String merchantUid;
@@ -38,21 +36,9 @@ public class PaymentHistory {
     private LocalDateTime paidAt; // 결제 시각
 
     @Field("status")
-    private Boolean status = true; // 결제 상태 (기본값: true)
+    private Boolean status = false; // 결제 상태 (기본값: true)
 
-    public PaymentHistory(String memberId, String orderId) {
-        this.memberId = memberId;
-        this.orderId = orderId;
-    }
-    public static PaymentHistory createPaymentDto(String memberId, String orderId, String merchantUid)
-    {
-        return PaymentHistory.builder()
-                .memberId(memberId)
-                .orderId(orderId)
-                .paidAt(LocalDateTime.now())
-                .merchantUid(merchantUid)
-                .build();
-    }
+
 
 }
 

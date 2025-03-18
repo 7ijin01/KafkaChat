@@ -7,14 +7,14 @@ import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Payment;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.example.kafkachat.payment.dto.PaymentRequestDto;
 import org.example.kafkachat.payment.service.PaymentService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/v1/payment")
@@ -36,27 +36,29 @@ public class PaymentController {
         this.iamportClient = new IamportClient(apiKey, secretKey);
     }
 
-    // 아임포트 결제 검증 및 결제 완료 처리
     @PostMapping("/verify/{imp_uid}")
-    public IamportResponse<Payment> validateIamport(@PathVariable String imp_uid, @RequestBody PaymentRequestDto request) throws IamportResponseException, IOException {
-        IamportResponse<Payment> payment = iamportClient.paymentByImpUid(imp_uid);
-        log.info("✅ 아임포트 API 응답 전체: {}", payment.getResponse());
+    public ResponseEntity<?> validateIamport(@PathVariable String imp_uid, @RequestBody PaymentRequestDto request) {
+        try {
+            IamportResponse<Payment> payment = iamportClient.paymentByImpUid(imp_uid);
+            log.info("✅ 아임포트 API 응답 전체: {}", payment.getResponse());
 
-        // 🔍 JSON 문자열 변환 후 다시 확인 (JSON 파싱 문제 가능성 체크)
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonResponse = objectMapper.writeValueAsString(payment.getResponse());
-        log.info("✅ JSON 변환된 아임포트 응답: {}", jsonResponse);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonResponse = objectMapper.writeValueAsString(payment.getResponse());
+            log.info("✅ JSON 변환된 아임포트 응답: {}", jsonResponse);
 
-        // 🔍 `merchantUid` 직접 확인
-        String merchantUidFromIamport = payment.getResponse().getMerchantUid();
-        log.info("✅ 아임포트에서 받은 주문번호 (원본): {}", merchantUidFromIamport);
+            String merchantUidFromIamport = payment.getResponse().getMerchantUid();
+            log.info("✅ 아임포트에서 받은 주문번호: {}", merchantUidFromIamport);
 
-        // 🔍 주문번호 길이 확인
-        log.info("✅ 주문번호 길이: {}", merchantUidFromIamport.length());
+            paymentService.processPayment(merchantUidFromIamport, request.getMemberId());
 
+            return ResponseEntity.ok(payment);
 
-        paymentService.processPayment(payment.getResponse().getMerchantUid(), request.getMemberId());
-
-        return payment;
+        } catch (IamportResponseException e) {
+            log.error("❌ 아임포트 결제 검증 실패: {}", e.getMessage());
+            return ResponseEntity.badRequest().body("아임포트 결제 검증 실패: " + e.getMessage());
+        } catch (IOException e) {
+            log.error("❌ JSON 변환 오류: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body("서버 오류 발생: " + e.getMessage());
+        }
     }
 }

@@ -1,42 +1,34 @@
 package org.example.kafkachat.payment.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.kafkachat.payment.entity.Orders;
+import lombok.extern.slf4j.Slf4j;
 import org.example.kafkachat.payment.entity.PaymentHistory;
-import org.example.kafkachat.payment.repository.OrderRepository;
 import org.example.kafkachat.payment.repository.PaymentHistoryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.NoSuchElementException;
-
-import static org.example.kafkachat.payment.entity.PaymentHistory.createPaymentDto;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
+@Slf4j
 public class PaymentService {
-    private final OrderRepository orderRepository;
     private final PaymentHistoryRepository paymentHistoryRepository;
 
-    // 결제 완료 처리
+    // 1원 결제 처리
     public PaymentHistory processPayment(String merchantUid, String memberId) {
-        System.out.println(merchantUid+"!!!!!!!!!!!!!\n");
-        Orders order = orderRepository.findByMerchantUid(merchantUid)
-                .orElseThrow(() -> new NoSuchElementException("주문 정보를 찾을 수 없습니다.1"));
+        log.info("✅ 결제 처리 시작: merchantUid={}, memberId={}", merchantUid, memberId);
 
-        order.setPaymentStatus(true);
-        orderRepository.save(order);
-
-        PaymentHistory paymentHistory = createPaymentDto(memberId, order.getOrderId(), merchantUid);
+        PaymentHistory paymentHistory = PaymentHistory.builder()
+                .merchantUid(merchantUid)
+                .memberId(memberId)
+                .totalPrice(BigDecimal.valueOf(1)) // 1원 고정
+                .paidAt(LocalDateTime.now())
+                .status(true)
+                .build();
 
         return paymentHistoryRepository.save(paymentHistory);
     }
-//    public PaymentHistory createPayment(String memberId,String merchantUid) {
-//        Orders order = orderRepository.findByMerchantUid(merchantUid)
-//                .orElseThrow(() -> new NoSuchElementException("주문 정보를 찾을 수 없습니다.2"));
-//
-//
-//        return paymentHistoryRepository.save(paymentHistory);
-//    }
 }
