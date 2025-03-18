@@ -15,27 +15,28 @@ import static org.example.kafkachat.payment.entity.PaymentHistory.createPaymentD
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class PaymentService {
     private final OrderRepository orderRepository;
     private final PaymentHistoryRepository paymentHistoryRepository;
 
     // 결제 완료 처리
     public PaymentHistory processPayment(String merchantUid, String memberId) {
+        System.out.println(merchantUid+"!!!!!!!!!!!!!\n");
         Orders order = orderRepository.findByMerchantUid(merchantUid)
-                .orElseThrow(() -> new NoSuchElementException("주문 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("주문 정보를 찾을 수 없습니다.1"));
 
         order.setPaymentStatus(true);
         orderRepository.save(order);
 
-        PaymentHistory paymentHistory = new PaymentHistory(memberId, order.getOrderId());
-        return paymentHistoryRepository.save(paymentHistory);
-    }
-    public PaymentHistory createPayment(String memberId,String merchantUid) {
-        Orders order = orderRepository.findByMerchantUid(merchantUid)
-                .orElseThrow(() -> new NoSuchElementException("주문 정보를 찾을 수 없습니다."));
-        PaymentHistory paymentHistory =createPaymentDto(memberId, order.getOrderId(), merchantUid);
+        PaymentHistory paymentHistory = createPaymentDto(memberId, order.getOrderId(), merchantUid);
 
         return paymentHistoryRepository.save(paymentHistory);
     }
+//    public PaymentHistory createPayment(String memberId,String merchantUid) {
+//        Orders order = orderRepository.findByMerchantUid(merchantUid)
+//                .orElseThrow(() -> new NoSuchElementException("주문 정보를 찾을 수 없습니다.2"));
+//
+//
+//        return paymentHistoryRepository.save(paymentHistory);
+//    }
 }
