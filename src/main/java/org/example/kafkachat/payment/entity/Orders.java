@@ -21,7 +21,7 @@ public class Orders {
     private String memberId; // 주문한 사용자 ID (MongoDB의 ObjectId)
 
     @Field("total_price")
-    private BigDecimal totalPrice = BigDecimal.valueOf(100); // 결제 금액 (100원 고정)
+    private BigDecimal totalPrice = BigDecimal.valueOf(1); // 결제 금액 (1원 고정)
 
     @Field("payment_status")
     private Boolean paymentStatus = false; // 결제 상태 (기본값: 미결제)
