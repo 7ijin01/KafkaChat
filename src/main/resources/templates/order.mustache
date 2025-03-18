@@ -26,7 +26,7 @@
                 buyer_postcode: document.getElementById("postCode").value,
                 buyer_addr: document.getElementById("address").value
             };
-
+            console.log("🔍 결제 요청 - merchantUid:", orderInfo.merchant_uid);
             IMP.request_pay(orderInfo, function (rsp) {
                 if (rsp.success) {
                     fetch("/api/v1/payment/verify/" + rsp.imp_uid, {
