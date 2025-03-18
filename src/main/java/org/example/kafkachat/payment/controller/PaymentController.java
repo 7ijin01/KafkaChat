@@ -13,6 +13,7 @@ import org.example.kafkachat.payment.service.PaymentService;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/v1/payment")
@@ -39,6 +40,7 @@ public class PaymentController {
     public IamportResponse<Payment> validateIamport(@PathVariable String imp_uid, @RequestBody PaymentRequestDto request) throws IamportResponseException, IOException {
         IamportResponse<Payment> payment = iamportClient.paymentByImpUid(imp_uid);
         log.info("결제 요청 응답. 주문번호: {}", payment.getResponse().getMerchantUid());
+        paymentService.createPayment(request.getMemberId(),payment.getResponse().getMerchantUid());
 
         paymentService.processPayment(payment.getResponse().getMerchantUid(), request.getMemberId());
 
