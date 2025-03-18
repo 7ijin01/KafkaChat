@@ -1,5 +1,7 @@
 package org.example.kafkachat.payment.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
@@ -12,6 +14,8 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @Document(collection = "payment_history")
 public class PaymentHistory {
     @Id
@@ -23,8 +27,11 @@ public class PaymentHistory {
     @Field("order_id")
     private String orderId; // 결제된 주문 ID
 
+    @Field("merchant_uid")
+    private String merchantUid;
+
     @Field("total_price")
-    private BigDecimal totalPrice = BigDecimal.valueOf(100); // 결제 금액 (100원 고정)
+    private BigDecimal totalPrice = BigDecimal.valueOf(1); // 결제 금액 (100원 고정)
 
     @Field("paid_at")
     @CreatedDate
@@ -37,5 +44,15 @@ public class PaymentHistory {
         this.memberId = memberId;
         this.orderId = orderId;
     }
+    public static PaymentHistory createPaymentDto(String memberId, String orderId, String merchantUid)
+    {
+        return PaymentHistory.builder()
+                .memberId(memberId)
+                .orderId(orderId)
+                .paidAt(LocalDateTime.now())
+                .merchantUid(merchantUid)
+                .build();
+    }
+
 }
 
