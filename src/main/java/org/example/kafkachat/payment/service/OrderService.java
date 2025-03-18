@@ -20,6 +20,7 @@ public class OrderService {
     public Orders createOrder(String memberId) {
         String merchantUid = generateMerchantUid();
         Orders order = new Orders(memberId, merchantUid);
+        System.out.println("db에 저장할 떄 :"+ order.getMerchantUid()+"\n");
         return orderRepository.save(order);
     }
 
