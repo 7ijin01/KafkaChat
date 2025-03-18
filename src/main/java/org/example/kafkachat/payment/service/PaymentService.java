@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.NoSuchElementException;
 
+import static org.example.kafkachat.payment.entity.PaymentHistory.createPaymentDto;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -27,6 +29,13 @@ public class PaymentService {
         orderRepository.save(order);
 
         PaymentHistory paymentHistory = new PaymentHistory(memberId, order.getOrderId());
+        return paymentHistoryRepository.save(paymentHistory);
+    }
+    public PaymentHistory createPayment(String memberId,String merchantUid) {
+        Orders order = orderRepository.findByMerchantUid(merchantUid)
+                .orElseThrow(() -> new NoSuchElementException("주문 정보를 찾을 수 없습니다."));
+        PaymentHistory paymentHistory =createPaymentDto(memberId, order.getOrderId(), merchantUid);
+
         return paymentHistoryRepository.save(paymentHistory);
     }
 }
