@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100원 결제</title>
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script> <!-- 포트원 SDK -->
+</head>
+<body>
+<h2>포트원(아임포트) 100원 결제 테스트</h2>
+<p>결제 금액: <strong>{{totalPrice}}원</strong></p>
+
+<button onclick="requestPayment()">결제하기</button>
+
+<script>
+    function requestPayment() {
+        if (!IMP) {
+            alert("포트원 SDK가 로드되지 않았습니다.");
+            return;
+        }
+
+        IMP.init("{{apiKey}}"); // 포트원 가맹점 식별 코드
+
+        IMP.request_pay({
+            channelKey: "{{channelKey}}", // 채널키 (필요한 경우 사용)
+            pay_method: "card",
+            merchant_uid: "{{merchantUid}}",
+            name: "100원 테스트 결제",
+            amount: 100,
+            buyer_email: "test@example.com",
+            buyer_name: "홍길동",
+            buyer_tel: "010-1234-5678",
+            buyer_addr: "서울특별시 강남구",
+            buyer_postcode: "01181"
+        }, function (rsp) {
+            if (rsp.success) {
+                console.log("결제 성공", rsp);
+                alert("결제 성공! 결제 번호: " + rsp.imp_uid);
+                verifyPayment(rsp.imp_uid, "{{merchantUid}}");
+            } else {
+                console.log("결제 실패:", rsp.error_msg);
+                alert("결제 실패: " + rsp.error_msg);
+            }
+        });
+    }
+
+    function verifyPayment(impUid, merchantUid) {
+        fetch("/api/v1/payment/complete", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                imp_uid: impUid,
+                merchant_uid: merchantUid
+            })
+        })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "paid") {
+                        alert("결제가 성공적으로 검증되었습니다!");
+                    } else {
+                        alert("결제 검증 실패");
+                    }
+                })
+                .catch(error => console.error("결제 검증 요청 실패:", error));
+    }
+</script>
+</body>
+</html>

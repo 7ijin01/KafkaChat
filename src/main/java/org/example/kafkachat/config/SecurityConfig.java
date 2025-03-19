@@ -80,7 +80,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login", "/", "/join", "/chat**","/chat/**","/topic/**","/ws/**","/user/**").permitAll()
                 .requestMatchers("/admin").hasRole("ADMIN")
-                .anyRequest().authenticated());
+                .anyRequest().permitAll());
 
         //JWTFilter 등록
         http
