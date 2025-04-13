@@ -15,5 +15,6 @@ public class KafkaTopicConfig
         return TopicBuilder.name("chat-messages")
                 .replicas(1)
                 .build();
+
     }
 }
